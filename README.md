@@ -84,4 +84,4 @@ npm run start
 
 ## License
 
-MIT License. Free and open source.
+Dev: GVC copyright @GVC2026.
