@@ -125,11 +125,6 @@ APP_URL="MY_APP_URL"
 PORT="3000"
 ```
 
-Notes:
-- `GEMINI_API_KEY` is used for Gemini-related integrations if enabled in the environment.
-- `APP_URL` is intended for hosted deployments or self-referential links. For this deployment, set it to `https://connectdatadrop.vercel.app/`.
-- `PORT` defaults to 3000 when unset.
-
 ---
 
 ## Security model
