@@ -142,3 +142,9 @@ This repository does not currently include a LICENSE file. If you plan to publis
 ## Summary
 
 DataDrop demonstrates a compact, secure, temporary file-sharing workflow with a strong emphasis on zero-knowledge patterns, simple adapters, and browser-side encryption. It is intended as an open-source learning project and reference implementation, not a production-ready service.
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+
+Copyright (c) 2026 Gagan
