@@ -1,0 +1,6 @@
+{
+  "name": "QRdrop",
+  "description": "Minimal, login-free, temporary file-sharing web application with custom keys, auto-expiry, and QR codes.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
