@@ -1,87 +1,161 @@
 # DataDrop
 
-> A minimal, login-free, temporary file-sharing website and open-source learning project (MIT License).
+> A minimal, login-free, temporary file-sharing app built with React, Vite, and Express.
 
-DataDrop allows senders to upload 1–5 files (25 MB total max), designate a memorable custom key, configure a mandatory password, and select automatic expiration and download limits. Recipients open `https://<host>/<key>`, enter the password, and download the files. Once either the time limit or download limit is reached, all files and metadata are permanently expunged.
+DataDrop is a learning-focused project for secure temporary file sharing. Senders choose a custom key, set a required password, upload up to five files, and configure an expiry and download cap. Recipients open the drop by key and password, unlock the files locally in the browser, and download decrypted content without exposing plaintext data to the server.
 
 ---
 
 ## Features
 
-- **No login, accounts, or cookies required**: Create and access drops with zero personal data.
-- **Custom human-friendly keys**: Suggests memorable keys (e.g. `blue-tiger-42`) with real-time availability checking and atomic reservation.
-- **Strict dual limits**: Drops expire automatically when either the time limit (10m, 1h, 2h, 24h) or the download counter (1, 2, 5, or until time ends) is reached.
-- **Atomic download reservation**: Download count is decremented only upon clicking "Download", issuing a single-use simulated presigned URL (valid for 60 seconds).
-- **Anti-brute-force defense**: Wrong key and wrong password return identical responses (`401 Incorrect key or password.`). Drops lock for 10 minutes after 5 failed attempts.
-- **Constant-time verification**: Password verification with Node's native `crypto.scrypt` and constant-time token comparison prevents timing attacks.
-- **Strict security headers**: Includes `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer`, and strict `Content-Security-Policy`.
-- **Instant private deletion**: Senders receive a private owner token to delete drops on demand before their scheduled expiration.
-- **Mobile-first, ultra-minimal UI**: Single narrow column (`max-w-md`), system typography, no marketing fluff or icon bloat.
+- No login, accounts, or cookies required.
+- Human-friendly custom keys such as `blue-tiger-42` with live availability checks.
+- Required password protection with server-side lockout after repeated failures.
+- Automatic expiry with either a time limit or download limit, whichever comes first.
+- Strict file limits: up to 5 files and 25 MB total per drop.
+- Client-side end-to-end encryption using AES-GCM and PBKDF2 before upload.
+- Server-side protection against wrong-key/wrong-password timing leaks with generic responses.
+- Atomic download reservation and short-lived single-use presigned download tokens.
+- Owner-only private deletion token for removing a drop before expiry.
+- Security headers including `X-Content-Type-Options`, `Referrer-Policy`, and CSP.
+- Mobile-first, minimal UI for a lightweight experience.
 
 ---
 
-## Architecture & Adapters
+## How it works
 
-DataDrop is designed as an architectural reference that decouples storage and persistence behind clean interfaces:
+1. The sender visits the app, selects a unique drop key, and enters a password.
+2. Files are encrypted in the browser before they are sent to the server.
+3. The server stores only encrypted file payloads, hashed auth data, and metadata for the active drop.
+4. A recipient opens `/your-key`, enters the password, and unlocks the drop client-side.
+5. Download links are generated as short-lived, single-use tokens; the final download may trigger automatic drop deletion.
 
-### 1. `MetadataStore` (`server/storage/metadataStore.interface.ts`)
-- Models key-value semantics modeled after Redis / Valkey (`get`, `setIfNotExists`, `set`, `update`, `delete`, `increment`, `list`, `ttl`).
-- In this learning sandbox, implemented by `InMemoryMetadataStore` (`server/storage/inMemoryMetadataStore.ts`) using standard JavaScript `Map` structures.
-- Can be replaced directly with an `ioredis` or Valkey driver in production without changing application routes.
-
-### 2. `FileStorage` (`server/storage/fileStorage.interface.ts`)
-- Models S3-compatible object storage semantics (`putObject`, `getObject`, `deleteObject`, `headObject`, `deleteMany`).
-- Implemented by `InMemoryFileStorage` (`server/storage/inMemoryFileStorage.ts`) using buffer maps.
-- Can be replaced directly with AWS S3, MinIO, or Cloudflare R2 adapters in production.
-
-### 3. Password Hashing
-- Uses Node.js built-in `crypto.scrypt` with unique salts.
-- Can be upgraded to Argon2id (`argon2` npm package) in production environments with native build toolchains.
+This design keeps the server blind to plaintext file names, contents, and passwords while still providing a fast, temporary share flow.
 
 ---
 
-## Running Locally
+## Architecture
+
+### Frontend
+- React + Vite single-page app
+- Route-based flow for home, create, open, and about views
+- Client-side encryption and decryption helpers in `src/utils/`
+
+### Backend
+- Express server in `server.ts`
+- API router in `server/apiRouter.ts`
+- Business logic in `server/dropService.ts`
+- Storage abstractions in `server/storage/`
+
+### Storage adapters
+- `MetadataStore`: interface for key/value storage semantics, modeled after Redis/Valkey patterns
+- `FileStorage`: interface for object-like storage semantics, modeled after S3-compatible backends
+- Default implementation uses in-memory maps for local development and learning purposes
+
+### Encryption model
+- Files and file metadata are encrypted in the browser using AES-GCM.
+- Password verification is derived with salted PBKDF2 / scrypt-style patterns and one-way auth verification.
+- Server never receives plaintext secrets or encryption keys.
+
+---
+
+## Repository structure
+
+```text
+.
+├── src/
+│   ├── components/
+│   ├── pages/
+│   ├── utils/
+│   ├── App.tsx
+│   └── main.tsx
+├── server/
+│   ├── storage/
+│   ├── apiRouter.ts
+│   ├── dropService.ts
+│   └── types.ts
+├── .env.example
+├── index.html
+├── package.json
+├── server.ts
+├── tsconfig.json
+├── vite.config.ts
+├── README.md
+└── metadata.json
+```
+
+---
+
+## Local development
 
 ### Prerequisites
 - Node.js 20+
 - npm
 
-### Installation & Development
+### Setup
 ```bash
-# 1. Install dependencies
 npm install
+cp .env.example .env
+```
 
-# 2. Run the development full-stack server (runs on port 3000)
+### Run in development mode
+```bash
 npm run dev
 ```
 
-### Production Build
-```bash
-# 1. Build frontend bundle
-npm run build
+The app runs on port 3000 by default.
 
-# 2. Start full-stack server
+### Production build
+```bash
+npm run build
 npm run start
 ```
 
 ---
 
-## Security Model & Zero-Knowledge E2EE
+## Environment variables
 
-- **Client-Side End-to-End Encryption (E2EE)**: All files and filenames are encrypted in the sender's browser with 256-bit AES-GCM and PBKDF2 (100,000 iterations of SHA-256) before upload. The server only holds encrypted binary blobs and has no access to the plaintext content or encryption keys.
-- **Passwords and owner tokens**: Passwords and owner tokens are never sent in plaintext. Only domain-separated cryptographic auth hashes are sent to the server for authentication.
-- **Trust & Safety**: Contact `safety@datadrop.example` with the relevant drop key.
+The project includes an example environment file:
+
+```dotenv
+GEMINI_API_KEY="MY_GEMINI_API_KEY"
+APP_URL="MY_APP_URL"
+PORT="3000"
+```
+
+Notes:
+- `GEMINI_API_KEY` is used for Gemini-related integrations if enabled in the environment.
+- `APP_URL` is intended for hosted deployments or self-referential links.
+- `PORT` defaults to 3000 when unset.
 
 ---
 
-## Known Limitations
+## Security model
 
-- **In-Memory Volatility**: Because this sandbox runs with in-memory adapters (`InMemoryMetadataStore` and `InMemoryFileStorage`), all active drops and uploaded files are stored in volatile Node process memory and will reset whenever the server restarts.
-- **Single Instance**: The default in-memory maps do not share state across horizontally scaled replicas. For production multi-replica deployments, configure Redis/Valkey for `MetadataStore` and S3/MinIO for `FileStorage`.
-- **File Size Ceiling**: Default ceiling is 25 MB total per drop across up to 5 files.
+- Passwords and owner tokens are not sent in plaintext.
+- Only one-way derived verifier data is submitted for authentication.
+- Duplicate key/password failures return the same generic error response to reduce enumeration risk.
+- Failed unlock attempts trigger temporary lockouts.
+- File uploads are blocked for unsafe executable/script extensions.
+- CSP and browser security headers are applied by the server.
+
+---
+
+## Known limitations
+
+- The default storage layer is in-memory and intentionally non-persistent.
+- Drops are not shared across multiple horizontally scaled instances unless a shared metadata store is introduced.
+- The app is designed as a sandbox and reference implementation rather than a production-ready multi-tenant service.
+- Total upload size is limited to 25 MB per drop across up to 5 files.
 
 ---
 
 ## License
 
-Dev: GVC copyright @GVC2026.
+This repository does not currently include a LICENSE file. If you plan to publish, redistribute, or reuse this project beyond personal learning, add a license before distribution.
+
+---
+
+## Summary
+
+DataDrop demonstrates a compact, secure, temporary file-sharing workflow with a strong emphasis on zero-knowledge patterns, simple adapters, and browser-side encryption. It is intended as an open-source learning project and a practical reference for building secure, minimal file-transfer apps.
