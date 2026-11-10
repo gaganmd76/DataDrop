@@ -113,20 +113,6 @@ npm run build
 npm run start
 ```
 
----
-
-## Environment variables
-
-The project includes an example environment file:
-
-```dotenv
-GEMINI_API_KEY="MY_GEMINI_API_KEY"
-APP_URL="MY_APP_URL"
-PORT="3000"
-```
-
----
-
 ## Security model
 
 - Passwords and owner tokens are not sent in plaintext.
