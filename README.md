@@ -2,7 +2,6 @@
 
 > A minimal, login-free, temporary file-sharing app built with React, Vite, and Express.
 
-**Live app:** [https://connectdatadrop.vercel.app/](https://connectdatadrop.vercel.app/)
 
 DataDrop is a learning-focused project for secure temporary file sharing. Senders choose a custom key, set a required password, upload up to five files, and configure an expiry and download cap. Recipients can download shared files without creating an account.
 
