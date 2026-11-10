@@ -2,7 +2,9 @@
 
 > A minimal, login-free, temporary file-sharing app built with React, Vite, and Express.
 
-DataDrop is a learning-focused project for secure temporary file sharing. Senders choose a custom key, set a required password, upload up to five files, and configure an expiry and download cap. Recipients open the drop by key and password, unlock the files locally in the browser, and download decrypted content without exposing plaintext data to the server.
+**Live app:** [https://connectdatadrop.vercel.app/](https://connectdatadrop.vercel.app/)
+
+DataDrop is a learning-focused project for secure temporary file sharing. Senders choose a custom key, set a required password, upload up to five files, and configure an expiry and download cap. Recipients can download shared files without creating an account.
 
 ---
 
@@ -125,7 +127,7 @@ PORT="3000"
 
 Notes:
 - `GEMINI_API_KEY` is used for Gemini-related integrations if enabled in the environment.
-- `APP_URL` is intended for hosted deployments or self-referential links.
+- `APP_URL` is intended for hosted deployments or self-referential links. For this deployment, set it to `https://connectdatadrop.vercel.app/`.
 - `PORT` defaults to 3000 when unset.
 
 ---
@@ -158,4 +160,4 @@ This repository does not currently include a LICENSE file. If you plan to publis
 
 ## Summary
 
-DataDrop demonstrates a compact, secure, temporary file-sharing workflow with a strong emphasis on zero-knowledge patterns, simple adapters, and browser-side encryption. It is intended as an open-source learning project and a practical reference for building secure, minimal file-transfer apps.
+DataDrop demonstrates a compact, secure, temporary file-sharing workflow with a strong emphasis on zero-knowledge patterns, simple adapters, and browser-side encryption. It is intended as an open-source learning project and reference implementation, not a production-ready service.
